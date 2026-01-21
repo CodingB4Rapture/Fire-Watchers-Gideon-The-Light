@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment
+.env
+venv/
+env/
+
+# Logs
+crash_log.txt
+*.log
+
+# System
+.DS_Store
+Thumbs.db
+
+# Agent
+.gemini/
