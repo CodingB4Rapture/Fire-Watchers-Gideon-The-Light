@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "c:\Users\sethj\Desktop\Fire Watchers\main.py", line 876, in <module>
+    main()
+  File "c:\Users\sethj\Desktop\Fire Watchers\main.py", line 665, in main
+    env_manager.construction_site.linked_fire.is_lit = (run_state.zone_2_hub_fire_fuel > 0)
+AttributeError: 'RunState' object has no attribute 'zone_2_hub_fire_fuel'

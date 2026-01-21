@@ -1,0 +1,33 @@
+{
+    "audio": {
+        "master_volume": 90,
+        "music_volume": 90,
+        "sfx_volume": 100,
+        "muted": false
+    },
+    "graphics": {
+        "display_mode": "Fullscreen",
+        "resolution": "2560x1440",
+        "vsync": false,
+        "show_fps": true,
+        "particle_effects": true,
+        "fullscreen": false
+    },
+    "gameplay": {
+        "difficulty": "Easy",
+        "tick_interval": 1.2,
+        "starting_temperature": 20,
+        "temperature_loss_rate": 1,
+        "temperature_gain_rate": 1
+    },
+    "controls": {
+        "move_up": "w",
+        "move_down": "s",
+        "move_left": "a",
+        "move_right": "d",
+        "toggle_fire": "f",
+        "switch_tool": "tab",
+        "action": "mouse1",
+        "pause": "escape"
+    }
+}
