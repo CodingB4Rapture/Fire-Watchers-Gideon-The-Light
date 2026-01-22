@@ -35,6 +35,10 @@ class LightingEngine:
         # Light sources
         self.lights = []
         
+        # Optimization: Cache light gradients
+        # Key: (radius, color_tuple) -> Surface
+        self.light_cache = {}
+        
     def clear_lights(self):
         """Remove all light sources."""
         self.lights.clear()
@@ -62,34 +66,62 @@ class LightingEngine:
         # Apply lighting layer using multiply blend
         target_surface.blit(self.light_layer, (0, 0), special_flags=pygame.BLEND_MULT)
     
-    def _draw_light(self, light):
-        """Draw a single light source with radial gradient."""
-        # Create a gradient from bright center to dark edges
-        # We'll draw multiple circles with decreasing alpha
+    def _get_cached_light_surf(self, radius, color):
+        """Retrieve or create a cached gradient surface."""
+        key = (radius, color)
+        if key in self.light_cache:
+            return self.light_cache[key]
         
-        # Number of gradient steps
+        # Create new gradient surface
+        surf = pygame.Surface((radius * 2, radius * 2))
+        surf.fill(self.darkness_color) # Base darkness
+        
+        cx, cy = radius, radius
         steps = 20
         
+        # Draw gradient circles
         for i in range(steps, 0, -1):
-            # Calculate radius and intensity for this step
-            step_radius = int(light.radius * (i / steps))
+            step_radius = int(radius * (i / steps))
+            intensity = (i / steps) ** 1.5
             
-            # Intensity falls off with distance (inverse square-ish)
-            intensity = (i / steps) ** 1.5  # Power curve for softer falloff
-            
-            # Calculate color with intensity
             r = int(min(255, self.darkness_color[0] + (255 - self.darkness_color[0]) * intensity))
             g = int(min(255, self.darkness_color[1] + (255 - self.darkness_color[1]) * intensity))
             b = int(min(255, self.darkness_color[2] + (255 - self.darkness_color[2]) * intensity))
             
-            # Tint with light color
-            r = int(r * (light.color[0] / 255))
-            g = int(g * (light.color[1] / 255))
-            b = int(b * (light.color[2] / 255))
+            # Tint
+            r = int(r * (color[0] / 255))
+            g = int(g * (color[1] / 255))
+            b = int(b * (color[2] / 255))
             
             if step_radius > 0:
-                pygame.draw.circle(self.light_layer, (r, g, b), 
-                                 (int(light.x), int(light.y)), step_radius)
+                pygame.draw.circle(surf, (r, g, b), (cx, cy), step_radius)
+                
+        self.light_cache[key] = surf
+        return surf
+
+    def _draw_light(self, light):
+        """Draw a single light source using cached surface."""
+        radius = int(light.radius)
+        if radius <= 0: return
+        
+        # Get cached surface
+        light_surf = self._get_cached_light_surf(radius, light.color)
+        
+        # Blit centered at light position
+        # We need to subtract radius to center top-left
+        dest_x = int(light.x) - radius
+        dest_y = int(light.y) - radius
+        
+        # Optimization: Don't blit special flags for individual lights onto darkness layer
+        # Just simple blit, because the light surf includes the darkness color background
+        # Actually, if we overlap lights, we might want MAX blend?
+        # But simple replacement is faster and looks okay for separated lights.
+        # Ideally we use ADD blend for lights overlap, but that requires black background.
+        # Our base is dark blue. Let's use MAX or just blit. Blit is fastest.
+        # But overlapping lights (torch + fire) should look brighter.
+        
+        # Let's try Special Flag BLEND_MAX to merge lights correctly in darkness
+        self.light_layer.blit(light_surf, (dest_x, dest_y), special_flags=pygame.BLEND_MAX)
     
     def add_fire_light(self, x, y, fuel_percent=1.0):
         """Add a flickering fire light source."""

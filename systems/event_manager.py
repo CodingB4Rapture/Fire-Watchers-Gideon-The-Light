@@ -38,6 +38,9 @@ class EventManager:
         if self.active_event or self.is_warning:
             return
         
+        if run_state.current_zone_id == 0:
+            return
+
         # GRACE PERIOD: No Cold Snaps for first 60 seconds in a zone
         if run_state and run_state.time_in_current_zone < self.GRACE_PERIOD:
             return

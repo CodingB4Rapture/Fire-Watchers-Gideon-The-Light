@@ -234,6 +234,7 @@ class Player:
                                 run_state.inventory["logs"] = 0
                                 spawn_text(f"STASHED {count} LOGS", (200, 200, 200))
                                 interaction_done = True
+                                interaction_done = True
                             elif run_state.log_stash > 0:
                                 # Withdraw 1 if empty inventory
                                 run_state.log_stash -= 1
@@ -241,12 +242,36 @@ class Player:
                                 spawn_text("WITHDREW 1 LOG", (255, 255, 255))
                                 interaction_done = True
 
+                    # Construction Site Interaction
+                    if not interaction_done and hasattr(env_manager, 'construction_site') and env_manager.construction_site:
+                        site = env_manager.construction_site
+                        dist = (pygame.Vector2(site.rect.center) - self.pos).length()
+                        if dist < 80:
+                            if run_state.inventory["logs"] > 0:
+                                # Deposit Log
+                                run_state.inventory["logs"] -= 1
+                                run_state.shack_progress["logs"] += 1
+                                spawn_text(f"ADDED LOG ({run_state.shack_progress['logs']}/20)", (200, 255, 200)) # Green
+                                
+                                # Check Completion
+                                if run_state.shack_progress["logs"] >= 20 and not run_state.zone_2_redeemed:
+                                    # COMPLETE!
+                                    run_state.zone_2_redeemed = True
+                                    self.redemption_event = True # Triggers main event
+                                    print("Shack Completed!")
+                                
+                                interaction_done = True
+                            else:
+                                spawn_text("NEED LOGS TO BUILD", (200, 200, 200))
+                                interaction_done = True
+
                     if not interaction_done:
                         for fire in env_manager.campfires:
                             dist = (pygame.Vector2(fire.box_rect.center) - self.pos).length()
                             if dist < 65: # Reachable
                                 if run_state and run_state.inventory["logs"] > 0:
-                                    fire.add_fuel(30.0)
+                                    from constants import FUEL_PER_LOG, FUEL_PER_STICK
+                                    fire.add_fuel(FUEL_PER_LOG)
                                     run_state.remove_log(1)
                                     
                                     # Objective Tracking
@@ -279,7 +304,8 @@ class Player:
                                     print(f"[TICK] Refueled Fire. Logs: {run_state.inventory['logs']}")
                                 elif run_state and run_state.inventory.get("sticks", 0) > 0:
                                     # STICK REFUEL: +5 Fuel
-                                    fire.add_fuel(5.0)
+                                    from constants import FUEL_PER_STICK
+                                    fire.add_fuel(FUEL_PER_STICK)
                                     run_state.inventory["sticks"] -= 1
                                     spawn_text("+5 FUEL", (255, 180, 50))
                                     print(f"[TICK] Refueled with stick. Remaining: {run_state.inventory['sticks']}")

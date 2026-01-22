@@ -1,5 +1,5 @@
 class TickSystem:
-    def __init__(self, tick_interval=1.2):
+    def __init__(self, tick_interval=1.0):
         self.tick_interval = tick_interval
         self.time_since_last_tick = 0.0
         
@@ -64,6 +64,18 @@ class TickSystem:
                     if dist < 200:  # Heat radius
                         is_warmed = True
                         break
+            
+            # Helper for Zone 2 Hub Fire (Virtual)
+            if not is_warmed and run_state.current_zone_id == 2:
+                # Check Hub logic manually if fire object not in list?
+                # Actually main loop should link fire to run_state.zone_2_hub_fire_fuel
+                # But let's check the property directly as backup
+                if run_state.zone_2_hub_fire_fuel > 0:
+                     # Calculate distance to Hub Center? (Approx 640, 360)
+                     import pygame
+                     dist = (pygame.Vector2(640, 360) - player.pos).length()
+                     if dist < 200: 
+                         is_warmed = True
         
         if is_warmed:
             # Warming
@@ -99,8 +111,15 @@ class TickSystem:
             multiplier = 2.0 if (event_manager and event_manager.active_event == "COLD_SNAP") else 1.0
             total_decay = (decay + wind_chill) * multiplier
             
+            # === ZONE 2 GLOBAL WARMTH ===
+            # If Hub Fire is active, the heat permeates the valley
+            if run_state.current_zone_id == 2 and run_state.zone_2_hub_fire_fuel > 0:
+                print(f"[TICK] Zone 2 Global Warmth (Fuel: {run_state.zone_2_hub_fire_fuel:.1f})")
+                total_decay = -0.5 # Slow warming +0.5 per tick
+                # Consuming hub fire fuel? Done in main/env update, but let's ensure we don't freeze.
+                
             # Fur Lining Upgrade
-            if run_state.fur_lining:
+            if run_state.fur_lining and total_decay > 0:
                 total_decay *= 0.8
             
             run_state.body_temp -= total_decay

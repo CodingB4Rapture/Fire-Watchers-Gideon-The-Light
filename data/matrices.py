@@ -1,3 +1,5 @@
+# CRITICAL: PROCEDURAL PIPELINE - DO NOT REPLACE WITH STATIC ASSETS
+# This file generates the pixel-art character frames dynamically.
 # Import generated sprite data
 try:
     from data.sprite_data import IDLE_DOWN_FRAMES, IDLE_LEFT_FRAMES, IDLE_RIGHT_FRAMES, IDLE_UP_FRAMES, WALK_DOWN_FRAMES

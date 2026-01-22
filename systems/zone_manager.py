@@ -26,7 +26,7 @@ class ZoneManager:
                 decay_rate=1.0, 
                 resource_count=15, 
                 wind_chill=0, 
-                goals={"survive_time": 60},
+                goals={"stabilize_logs": 20},
                 is_stabilized=False  # Can be stabilized by player
             ),
             2: ZoneData(

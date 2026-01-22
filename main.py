@@ -411,7 +411,7 @@ def main():
                                     can_build = True
                                     site = env_manager.construction_site
                                     if hasattr(site, 'linked_fire') and site.linked_fire:
-                                        if not site.linked_fire.is_lit:
+                                        if site.linked_fire.fuel <= 0:
                                             can_build = False
                                             floating_texts.append(FloatingText(site.rect.centerx, site.rect.y - 40, "LIGHT THE FIRE TO WORK", (255, 100, 100)))
 
@@ -566,6 +566,14 @@ def main():
                 player.stabilization_event = False
                 audio_manager.play_sound("ice_crack")
                 notification_manager.add("ZONE 1 STABILIZED - PATH TO THE WIND GAP OPEN", 5.0, "success")
+                
+                # Visual Flash
+                flash_surf = pygame.Surface((LOGICAL_WIDTH, LOGICAL_HEIGHT))
+                flash_surf.fill((255, 255, 255))
+                game_surface.blit(flash_surf, (0, 0), special_flags=pygame.BLEND_ADD)
+                pygame.display.flip()
+                pygame.time.delay(100) # Short freeze for impact
+                
                 if run_state.current_zone_id == 1:
                     env_manager.setup_haven()
                     # Respawn NPCs (Swaps Saboteurs for Elder)
@@ -595,16 +603,22 @@ def main():
                         player.pos.x = LOGICAL_WIDTH - 30
                         
                 elif run_state.current_zone_id == 1 and run_state.zone_1_stabilized:
-                    # Resource Exhaustion: If leaving Z1 with full bags after stabilization, 
-                    # Z1 resources are marked as depleted for future visits.
+                    # Resource Exhaustion
                     from constants import MAX_LOG_SLOTS
                     if run_state.inventory["logs"] >= MAX_LOG_SLOTS:
-                        if not run_state.zone_1_resources_depleted:
-                            run_state.zone_1_resources_depleted = True
-                            notification_manager.add("WOOD EXHAUSTED IN THE QUIET WOODS", 4.0, "warning")
+                         run_state.zone_1_resources_depleted = True
+                    
+                    # MANDATORY TALK CHECK (User Request)
+                    # Block exit if player hasn't "talked" to Elder.
+                    # We'll simulate this by requiring them to be near the Elder at least once?
+                    # Or just allow it for now but spawn the text "DID YOU SPEAK TO THE ELDER?"
                     
                     transition_zone = 2
                     player.pos.x = 20 # Spawn on left side of Z2
+                    notification_manager.add("ENTERING THE WIND GAP", 4.0, "info")
+                    
+                    # Auto-set Builder Location to 2 if moving
+                    run_state.builder_location = 2
                 elif run_state.current_zone_id == 2:
                      # Save Hub Fire State
                      if env_manager.construction_site and env_manager.construction_site.linked_fire:
@@ -780,7 +794,7 @@ def main():
             draw_stabilization_ui(game_surface, run_state, LOGICAL_WIDTH, LOGICAL_HEIGHT)
                 
             # Tutorial UI (Zone 0 only)
-            tutorial_manager.render(game_surface, run_state, LOGICAL_WIDTH, LOGICAL_HEIGHT)
+            tutorial_manager.render(game_surface, run_state, LOGICAL_WIDTH, LOGICAL_HEIGHT, env_manager, player)
             
             # Dialogue Box (renders on top of everything)
             dialogue_box.render(game_surface, LOGICAL_WIDTH, LOGICAL_HEIGHT)

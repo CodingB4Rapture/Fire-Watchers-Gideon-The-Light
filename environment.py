@@ -49,11 +49,13 @@ def generate_background_surface(width, height):
     bg.blit(overlay, (0, 0))
     
     return bg
+from constants import TREE_HEALTH, LOGS_PER_TREE, TREE_REGROW_TICKS_SAPLING, TREE_REGROW_TICKS_FULL, MAX_FIRE_FUEL, FUEL_PER_LOG
+
 class Tree:
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, 40, 80) # Visual rect (approx)
         self.hitbox = pygame.Rect(x + 12, y + 68, 16, 12) # Collision base (smaller footprint)
-        self.health = 3
+        self.health = TREE_HEALTH
         
         # States
         self.STATE_FULL = 0
@@ -134,22 +136,22 @@ class Tree:
         if self.health <= 0:
             self.state = self.STATE_STUMP
             self.regrow_timer = 0
-            return 3 # Drop 3 Logs
+            return LOGS_PER_TREE # Drop Logs
         return 0
     
     def update_tick(self):
         """Called by TickSystem to handle regrowth."""
         if self.state == self.STATE_STUMP:
             self.regrow_timer += 1
-            if self.regrow_timer >= 50:
+            if self.regrow_timer >= TREE_REGROW_TICKS_SAPLING:
                 self.state = self.STATE_SAPLING
                 self.regrow_timer = 0
         elif self.state == self.STATE_SAPLING:
             self.regrow_timer += 1
-            if self.regrow_timer >= 100:
+            if self.regrow_timer >= TREE_REGROW_TICKS_FULL:
                 self.state = self.STATE_FULL
                 self.regrow_timer = 0
-                self.health = 3
+                self.health = TREE_HEALTH
     
     def update(self, dt):
         """Update tree animations (shake, flash)."""
@@ -337,8 +339,8 @@ class Campfire:
         self.rect = pygame.Rect(x, y, 32, 32) # Fire center
         # Bigger Log Chest (To right of fire)
         self.box_rect = pygame.Rect(x + 40, y - 10, 42, 36) 
-        self.fuel = 30.0 # Seconds of burn time
-        self.max_fuel = 120.0
+        self.fuel = FUEL_PER_LOG # Seconds of burn time
+        self.max_fuel = MAX_FIRE_FUEL
         self.anim_timer = 0.0
         self.frame = 0
         self.is_tutorial_fire = False  # Tutorial fires never extinguish
@@ -740,6 +742,17 @@ class EnvironmentManager:
         
         # Stockpile nearby
         self.stockpile = Stockpile(fx - 100, fy + 20)
+        
+        # Spawn visual warmth (Embers)
+        import random
+        for _ in range(30):
+            px = fx + random.randint(-40, 40)
+            py = fy + random.randint(-40, 40)
+            color = random.choice([(255, 100, 0), (255, 200, 50), (200, 100, 50)])
+            p = Particle(px, py, color, size=3)
+            p.vy = random.uniform(-100, -50) # Float up
+            p.life = random.uniform(1.0, 3.0)
+            self.particles.append(p)
     
     def spawn_campfire(self, x, y):
         self.campfires.append(Campfire(x, y))

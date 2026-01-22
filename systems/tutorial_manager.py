@@ -58,44 +58,8 @@ class TutorialManager:
         # Step 5: Depart
         # Completion handled by zone transition
 
-    def render(self, screen, run_state, width, height):
+    def render(self, screen, run_state, width, height, env_manager=None, player=None):
         if run_state.tutorial_completed or run_state.current_zone_id != 0: return
-
-        # Toast UI
-        # Top Center
-        toast_w, toast_h = 420, 50
-        x = (width - toast_w) // 2
-        y = 50 # Top
         
-        rect = pygame.Rect(x, y, toast_w, toast_h)
-        
-        # Bg
-        s = pygame.Surface((toast_w, toast_h), pygame.SRCALPHA)
-        pygame.draw.rect(s, (20, 20, 25, 200), s.get_rect(), border_radius=15)
-        screen.blit(s, (x, y))
-        pygame.draw.rect(screen, (255, 255, 255), rect, 2, border_radius=15)
-        
-        # Text Generation
-        step = run_state.tutorial_step
-        text = ""
-        
-        move_key = self.get_control_string("MOVE")
-        switch_key = self.get_control_string("SWITCH")
-        action_key = self.get_control_string("ACTION")
-        
-        if step == 0:
-            text = f"Use {move_key} to Move."
-        elif step == 1:
-            text = f"Press {switch_key} to equip Axe."
-        elif step == 2:
-            text = f"Press {action_key} to Chop Tree."
-        elif step == 3:
-            text = f"Press {switch_key} to equip Torch."
-        elif step == 4:
-            text = f"Press {action_key} on Fire to Stoke."
-        elif step >= 5:
-             text = "Walk to the Right Edge to Leave."
-             
-        font = pygame.font.SysFont("Consolas", 18, bold=True)
-        t_surf = font.render(text, True, (255, 255, 255))
-        screen.blit(t_surf, (x + (toast_w - t_surf.get_width())//2, y + (toast_h - t_surf.get_height())//2))
+        from ui.tutorial import draw_tutorial_ui
+        draw_tutorial_ui(screen, run_state, width, height, env_manager, player)
