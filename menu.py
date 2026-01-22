@@ -485,6 +485,24 @@ class MenuSystem:
         self.draw_text_with_outline(screen, "PAUSED", self.title_font, 
                                     self.title_color, self.outline_color,
                                     self.screen_width // 2, 150)
+
+        # Pause options
+        start_y = 300
+        for i, option in enumerate(self.pause_menu_options):
+            color = self.selected_color if i == self.selected_index else self.menu_color
+            rect = self.draw_text_with_outline(screen, option, self.menu_font,
+                                               color, self.outline_color,
+                                               self.screen_width // 2, start_y + i * 60)
+            
+            if i == self.selected_index:
+                indicator = self.menu_font.render(">", True, self.selected_color)
+                screen.blit(indicator, (rect.left - 40, rect.top))
+        
+        # Feedback message (e.g., "Saved!")
+        if self.message_timer > 0:
+            msg_surf = self.menu_font.render(self.message, True, (100, 255, 100))
+            msg_rect = msg_surf.get_rect(center=(self.screen_width // 2, self.screen_height - 100))
+            screen.blit(msg_surf, msg_rect)
         
     def draw_credits(self, screen):
         """Draw final credits roll."""
@@ -513,24 +531,6 @@ class MenuSystem:
         t3 = font_small.render("[Press Key to Return]", True, (150, 150, 160))
         r3 = t3.get_rect(center=(cx, self.screen_height - 50))
         screen.blit(t3, r3)
-
-        # Pause options
-        start_y = 300
-        for i, option in enumerate(self.pause_menu_options):
-            color = self.selected_color if i == self.selected_index else self.menu_color
-            rect = self.draw_text_with_outline(screen, option, self.menu_font,
-                                               color, self.outline_color,
-                                               self.screen_width // 2, start_y + i * 60)
-            
-            if i == self.selected_index:
-                indicator = self.menu_font.render(">", True, self.selected_color)
-                screen.blit(indicator, (rect.left - 40, rect.top))
-        
-        # Feedback message (e.g., "Saved!")
-        if self.message_timer > 0:
-            msg_surf = self.menu_font.render(self.message, True, (100, 255, 100))
-            msg_rect = msg_surf.get_rect(center=(self.screen_width // 2, self.screen_height - 100))
-            screen.blit(msg_surf, msg_rect)
             
     def draw_game_over(self, screen, run_state):
         """Draw the death screen with stats."""

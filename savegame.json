@@ -1,0 +1,34 @@
+{
+  "run_state": {
+    "body_temp": 20.0,
+    "inventory": {
+      "logs": 5,
+      "sticks": 3
+    },
+    "tick_count": 61,
+    "current_zone_id": 1,
+    "is_alive": true,
+    "log_stash": 0,
+    "zone_1_stabilized": false,
+    "zone_1_resources_depleted": false,
+    "logs_deposited_in_zone_1": 0,
+    "logs_deposited_in_zone_2": 0,
+    "zone_2_redeemed": false,
+    "shack_progress": {
+      "logs": 0,
+      "sticks": 0,
+      "state": 0
+    },
+    "beacon_lit": false,
+    "zone_2_hub": {
+      "fire_fuel": 0.0
+    }
+  },
+  "player": {
+    "pos_x": 388.294344160979,
+    "pos_y": 482.19436359462173
+  },
+  "world": {
+    "stabilized_zones": []
+  }
+}
